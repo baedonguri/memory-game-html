@@ -10,6 +10,7 @@
     "validate": "aws cloudformation validate-template --template-body file://deploy.yaml",
     "check-aws": "./scripts/check-aws.sh",
     "load-env": "./scripts/load-env.sh",
+    "setup": "cp .env.example .env && echo '📝 Created .env file. Please edit it with your settings.'",
     "deploy": "./scripts/run-with-env.sh ./deploy.sh",
     "deploy:direct": "./deploy.sh",
     "cleanup": "./scripts/run-with-env.sh ./cleanup-stack.sh",
@@ -17,7 +18,6 @@
     "status": "./scripts/run-with-env.sh sh -c 'aws cloudformation describe-stacks --stack-name \"$STACK_NAME\" --region \"$AWS_REGION\" --query \"Stacks[0].{Status:StackStatus,Created:CreationTime,Updated:LastUpdatedTime}\" --output table'",
     "urls": "./scripts/run-with-env.sh sh -c 'aws cloudformation describe-stacks --stack-name \"$STACK_NAME\" --region \"$AWS_REGION\" --query \"Stacks[0].Outputs[?OutputKey==\\`WebsiteURL\\` || OutputKey==\\`CloudFrontURL\\`].{Key:OutputKey,Value:OutputValue}\" --output table'",
     "cost": "./scripts/run-with-env.sh sh -c 'aws ce get-cost-and-usage --time-period Start=$(date -d \"1 month ago\" +%Y-%m-01),End=$(date +%Y-%m-%d) --granularity MONTHLY --metrics BlendedCost --group-by Type=DIMENSION,Key=SERVICE --region \"$AWS_REGION\"'",
-    "setup": "cp .env.example .env && echo '📝 Created .env file. Please edit it with your settings.'",
     "preinstall": "echo 'Checking AWS CLI...' && aws --version || echo 'Please install AWS CLI'",
     "postinstall": "echo 'Memory Game AWS deployment tools ready! 🎮'"
   },
