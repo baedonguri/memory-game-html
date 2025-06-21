@@ -1,0 +1,32 @@
+# Development files
+*.sh
+.git/
+.gitignore
+.npmignore
+
+# AWS specific (keep only necessary files)
+cleanup-stack.sh
+cleanup-and-redeploy.sh
+
+# Documentation (keep README.md)
+docs/
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Development dependencies
+.eslintrc*
+.prettierrc*
+jest.config.js
+webpack.config.js
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

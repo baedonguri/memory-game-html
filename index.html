@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Card Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 25px 35px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: none;
+            letter-spacing: -0.02em;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            font-size: 16px;
+            min-width: 80px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+            position: relative;
+            min-height: 80px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:active {
+            transform: scale(0.95);
+        }
+
+        .card.flipped {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            color: #333;
+            box-shadow: 0 6px 25px rgba(255, 154, 158, 0.4);
+        }
+
+        .card.matched {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+            transform: scale(0.95);
+            box-shadow: 0 8px 30px rgba(168, 237, 234, 0.5);
+            animation: matchPulse 0.6s ease-in-out;
+        }
+
+        .card.hidden {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        @keyframes matchPulse {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(0.95); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #ff5252 0%, #d32f2f 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 107, 107, 0.4);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        .difficulty-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .difficulty-btn:hover {
+            background: linear-gradient(135deg, #26d0ce 0%, #1a9850 100%);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6);
+        }
+
+        .win-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            color: #333;
+            padding: 40px;
+            border-radius: 25px;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 90vw;
+            width: 400px;
+            animation: modalSlideIn 0.5s ease-out;
+        }
+
+        .win-message.show {
+            display: block;
+        }
+
+        .win-message h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .win-message p {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .win-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            gap: 20px;
+        }
+
+        .win-stat {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            flex: 1;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .win-stat-label {
+            display: block;
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .win-stat-value {
+            display: block;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .play-again-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            padding: 16px 32px;
+            font-size: 18px;
+            margin-top: 20px;
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .play-again-btn:hover {
+            background: linear-gradient(135deg, #26d0ce 0%, #1a9850 100%);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.6);
+        }
+
+        @keyframes modalSlideIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        /* Fireworks effect */
+        .firework {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes firework1 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(30px, -30px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes firework2 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-30px, -30px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes firework3 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(30px, 30px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes firework4 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-30px, 30px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes firework5 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(0, -40px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes firework6 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(0, 40px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes firework7 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-40px, 0) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes firework8 {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(40px, 0) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .game-header {
+                padding: 20px 25px;
+                margin-bottom: 25px;
+            }
+            
+            .game-header h1 {
+                font-size: 2rem;
+            }
+            
+            .game-stats {
+                gap: 15px;
+            }
+            
+            .stat-item {
+                padding: 10px 15px;
+                min-width: 70px;
+            }
+            
+            .stat-value {
+                font-size: 16px;
+            }
+            
+            .game-board {
+                gap: 8px;
+                max-width: 320px;
+            }
+            
+            .card {
+                font-size: 20px;
+                min-height: 70px;
+            }
+            
+            button {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+            
+            .win-message {
+                padding: 30px 25px;
+                width: 350px;
+            }
+            
+            .win-message h2 {
+                font-size: 1.8rem;
+            }
+            
+            .win-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-header">
+        <h1>🧠 Memory Game</h1>
+        <div class="game-stats">
+            <div class="stat-item">
+                <span class="stat-label">Moves</span>
+                <span class="stat-value" id="moves">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Matches</span>
+                <span class="stat-value" id="matches">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Time</span>
+                <span class="stat-value" id="timer">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-board" id="gameBoard">
+        <!-- Cards will be generated by JavaScript -->
+    </div>
+
+    <div class="controls">
+        <button onclick="startNewGame()">🔄 New Game</button>
+        <button class="difficulty-btn" onclick="toggleDifficulty()">⚡ <span id="difficulty">Easy</span></button>
+    </div>
+
+    <div class="win-message" id="winMessage">
+        <h2>🎉 Amazing!</h2>
+        <p>You've mastered the memory challenge!</p>
+        <div class="win-stats">
+            <div class="win-stat">
+                <span class="win-stat-label">Moves</span>
+                <span class="win-stat-value" id="finalMoves">0</span>
+            </div>
+            <div class="win-stat">
+                <span class="win-stat-label">Time</span>
+                <span class="win-stat-value" id="finalTime">00:00</span>
+            </div>
+        </div>
+        <button class="play-again-btn" onclick="startNewGame(); hideWinMessage();">🚀 Play Again</button>
+    </div>
+
+    <script>
+        // Game state
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let gameStarted = false;
+        let startTime = null;
+        let timerInterval = null;
+        let currentDifficulty = 'easy'; // easy: 4x4, hard: 6x4
+
+        // Card symbols for different difficulties
+        const easySymbols = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+        const hardSymbols = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐸'];
+
+        function getSymbols() {
+            return currentDifficulty === 'easy' ? easySymbols : hardSymbols;
+        }
+
+        function getGridSize() {
+            return currentDifficulty === 'easy' ? { cols: 4, rows: 4 } : { cols: 4, rows: 6 };
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function createCards() {
+            const symbols = getSymbols();
+            const pairs = [...symbols, ...symbols]; // Create pairs
+            return shuffleArray(pairs);
+        }
+
+        function setupGameBoard() {
+            const gameBoard = document.getElementById('gameBoard');
+            const { cols, rows } = getGridSize();
+            
+            gameBoard.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            gameBoard.innerHTML = '';
+            
+            cards = createCards();
+            
+            cards.forEach((symbol, index) => {
+                const card = document.createElement('div');
+                card.className = 'card hidden';
+                card.dataset.symbol = symbol;
+                card.dataset.index = index;
+                card.addEventListener('click', () => flipCard(index));
+                
+                // Add touch event for mobile
+                card.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    flipCard(index);
+                });
+                
+                gameBoard.appendChild(card);
+            });
+        }
+
+        function flipCard(index) {
+            if (!gameStarted) {
+                startGame();
+            }
+
+            const cardElement = document.querySelectorAll('.card')[index];
+            
+            // Prevent flipping if card is already flipped or matched
+            if (cardElement.classList.contains('flipped') || 
+                cardElement.classList.contains('matched') ||
+                flippedCards.length >= 2) {
+                return;
+            }
+
+            // Add haptic feedback for mobile
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+
+            cardElement.classList.remove('hidden');
+            cardElement.classList.add('flipped');
+            cardElement.textContent = cards[index];
+            
+            flippedCards.push({ index, symbol: cards[index], element: cardElement });
+
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                
+                setTimeout(checkMatch, 1000);
+            }
+        }
+
+        function createFireworks(element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8'];
+            
+            // Create 8 firework particles
+            for (let i = 1; i <= 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'firework';
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.animation = `firework${i} 0.6s ease-out forwards`;
+                
+                document.body.appendChild(particle);
+                
+                // Remove particle after animation
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 600);
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            
+            if (card1.symbol === card2.symbol) {
+                // Match found
+                card1.element.classList.remove('flipped');
+                card2.element.classList.remove('flipped');
+                card1.element.classList.add('matched');
+                card2.element.classList.add('matched');
+                
+                // Create fireworks effect for both cards
+                createFireworks(card1.element);
+                setTimeout(() => createFireworks(card2.element), 150);
+                
+                matchedPairs++;
+                document.getElementById('matches').textContent = matchedPairs;
+                
+                // Stronger haptic feedback for matches
+                if (navigator.vibrate) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+                
+                // Check if game is won
+                if (matchedPairs === cards.length / 2) {
+                    endGame();
+                }
+            } else {
+                // No match
+                card1.element.classList.remove('flipped');
+                card2.element.classList.remove('flipped');
+                card1.element.classList.add('hidden');
+                card2.element.classList.add('hidden');
+                card1.element.textContent = '';
+                card2.element.textContent = '';
+            }
+            
+            flippedCards = [];
+        }
+
+        function startGame() {
+            gameStarted = true;
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (!startTime) return;
+            
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            
+            const finalTime = document.getElementById('timer').textContent;
+            document.getElementById('finalMoves').textContent = moves;
+            document.getElementById('finalTime').textContent = finalTime;
+            
+            setTimeout(() => {
+                document.getElementById('winMessage').classList.add('show');
+            }, 500);
+        }
+
+        function hideWinMessage() {
+            document.getElementById('winMessage').classList.remove('show');
+        }
+
+        function startNewGame() {
+            // Reset game state
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            gameStarted = false;
+            startTime = null;
+            
+            // Clear timer
+            clearInterval(timerInterval);
+            
+            // Reset UI
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('matches').textContent = '0';
+            document.getElementById('timer').textContent = '00:00';
+            
+            // Setup new board
+            setupGameBoard();
+        }
+
+        function toggleDifficulty() {
+            currentDifficulty = currentDifficulty === 'easy' ? 'hard' : 'easy';
+            document.getElementById('difficulty').textContent = 
+                currentDifficulty === 'easy' ? 'Easy' : 'Hard';
+            startNewGame();
+        }
+
+        // Initialize game
+        setupGameBoard();
+    </script>
+</body>
+</html>

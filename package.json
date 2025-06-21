@@ -1,0 +1,62 @@
+{
+  "name": "memory-game-aws",
+  "version": "1.0.0",
+  "description": "Memory card matching game deployed on AWS S3 with CloudFront",
+  "main": "index.html",
+  "scripts": {
+    "start": "open index.html",
+    "build": "echo 'Static files ready for deployment'",
+    "test": "echo \"No tests specified\" && exit 0",
+    "validate": "aws cloudformation validate-template --template-body file://deploy.yaml",
+    "check-aws": "./scripts/check-aws.sh",
+    "load-env": "./scripts/load-env.sh",
+    "deploy": "./scripts/run-with-env.sh ./deploy.sh",
+    "deploy:direct": "./deploy.sh",
+    "cleanup": "./scripts/run-with-env.sh ./cleanup-stack.sh",
+    "cleanup:direct": "./cleanup-stack.sh",
+    "status": "./scripts/run-with-env.sh sh -c 'aws cloudformation describe-stacks --stack-name \"$STACK_NAME\" --region \"$AWS_REGION\" --query \"Stacks[0].{Status:StackStatus,Created:CreationTime,Updated:LastUpdatedTime}\" --output table'",
+    "urls": "./scripts/run-with-env.sh sh -c 'aws cloudformation describe-stacks --stack-name \"$STACK_NAME\" --region \"$AWS_REGION\" --query \"Stacks[0].Outputs[?OutputKey==\\`WebsiteURL\\` || OutputKey==\\`CloudFrontURL\\`].{Key:OutputKey,Value:OutputValue}\" --output table'",
+    "cost": "./scripts/run-with-env.sh sh -c 'aws ce get-cost-and-usage --time-period Start=$(date -d \"1 month ago\" +%Y-%m-01),End=$(date +%Y-%m-%d) --granularity MONTHLY --metrics BlendedCost --group-by Type=DIMENSION,Key=SERVICE --region \"$AWS_REGION\"'",
+    "setup": "cp .env.example .env && echo '📝 Created .env file. Please edit it with your settings.'",
+    "preinstall": "echo 'Checking AWS CLI...' && aws --version || echo 'Please install AWS CLI'",
+    "postinstall": "echo 'Memory Game AWS deployment tools ready! 🎮'"
+  },
+  "keywords": [
+    "memory-game",
+    "javascript",
+    "html5",
+    "css3",
+    "mobile-game",
+    "aws",
+    "s3",
+    "cloudfront",
+    "static-website"
+  ],
+  "author": {
+    "name": "Aiden",
+    "email": "your-email@example.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/memory-game-aws.git"
+  },
+  "homepage": "https://game.baedonguri.store",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "files": [
+    "index.html",
+    "error.html",
+    "deploy.yaml",
+    "README.md",
+    "deploy.sh",
+    "cleanup-stack.sh",
+    "scripts/",
+    ".env.example"
+  ],
+  "peerDependencies": {
+    "@aws-cli/cli": ">=2.0.0"
+  }
+}
